@@ -1,5 +1,8 @@
 'use strict';
 const electron = require('electron');
+const ipcMain = require('electron').ipcMain;
+var db = require('node-localdb');
+var user = db('db/user.json');
 const app = electron.app;  // Module to control application life.
 const BrowserWindow = electron.BrowserWindow;  // Module to create native browser window.
 
@@ -27,6 +30,29 @@ app.on('ready', function() {
 
   // Open the DevTools.
   mainWindow.webContents.openDevTools();
+
+  /*
+  // In main process.
+  ipcMain.on('asynchronous-message', function(event, arg) {
+    console.log(arg);  // prints "ping"
+    switch (arg) {
+      case 'user':
+        user.findOne({}).then(function(u){
+          event.sender.send('asynchronous-reply', u);
+        });
+        break;
+      default:
+
+    }
+  });
+  */
+
+  ipcMain.on('synchronous-message', function(event, arg) {
+    console.log(arg);
+    user.findOne({}).then(function(u){
+      event.returnValue = u;
+    });
+  });
 
   // Emitted when the window is closed.
   mainWindow.on('closed', function() {
